@@ -1,0 +1,44 @@
+{
+  "PersonalInformation": {
+    "Full Name": "Albert Tan Jin Xiang",
+    "LinkedIn": "https://www.linkedin.com/in/albert-tan-2696471ab",
+    "GitHub": "https://www.github.com/alberttan123"
+  },
+  "WorkExperience": [
+    {
+      "Company": "MUSH-E",
+      "Role": "Full Stack Developer - Internship",
+      "Work Time Range": "Sept 2024 – Feb 2025",
+      "What I did there": "<put actual information>",
+      "Reference": "https://www.mush-e.com"
+    }
+  ],
+  "CTFExperience": [
+    {
+      "CTF Name": "<put ctf name here>",
+      "Interesting information": "<put any interesting information here>"
+    }
+  ],
+  "Education": [
+    {
+      "Institution": "Asia Pacific University",
+      "Qualification": "Bachelor of Science (Honors) in Computer Science (Specialism in Cybersecurity)",
+      "Date Range": "2025 – 2027",
+      "Latest CGPA": "3.56",
+      "Interesting Information": "<put any interesting information here>"
+    }
+  ],
+  "Certificates": [
+    {
+      "Certificate Name": "CCNAv7: Introduction to Networks",
+      "Date Range": "May 2024"
+    }
+  ],
+  "Projects": [
+    {
+      "Project Title": "Mobile Attack & Defense Machine",
+      "Date Range": "Oct 2025 – In Progress",
+      "Interesting Information": "<put any interesting information here>"
+    }
+  ]
+}

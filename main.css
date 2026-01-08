@@ -1,0 +1,26 @@
+.crt-container{
+    border: 3px solid white;
+    width: 80%;
+    height: 70vh;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.code-container, .userprompt{
+    color: white;
+}
+
+.code-container{
+    white-space: pre-wrap;
+    /* white-space: pre-wrap is so that the space characters added for help message is preserved */
+}
+
+.input-field-container{
+    display: flex;
+    flex-direction: row;
+}
+
+body{
+    background-color: black;
+    font-family: monospace;
+}

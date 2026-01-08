@@ -1,5 +1,5 @@
 # Website Portfolio
-This is a website portfolio where I tried to make everything without AI, the only thing that used AI was quickly making the cors_server.py for development and testing.
+This is a website portfolio where I tried to make everything without AI, only regular google search, the only thing that used AI was quickly making the cors_server.py for development and testing.
 
 ## Description
 It mainly uses a command line style, with some common functions available such as ls, cd, cat. 
@@ -24,6 +24,7 @@ The 3 different modes correspond to levels of knowing how to use a command line.
 - Cat function
 - Beginner and Intermediate mode
 - Anime.js implementation
+- There's probably more, but I forgot
 
 ## To Run and Test
 1. run python cors_server.py

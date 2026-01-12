@@ -84,6 +84,20 @@ header{
     cursor: text; /* Keeps the text cursor visible */
 
     padding-left: 7px;
+    flex: 1;
+    box-sizing: border-box;
+}
+
+.isFolder{
+    color: blue;
+}
+
+.isLink{
+    color: blueviolet;
+}
+
+.isError{
+    color: red;
 }
 
 body{

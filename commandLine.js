@@ -60,11 +60,12 @@ async function loadData(){
     }
     catch (error){
         console.error(error.message);
-        //AHHHHHHHHHHHHHH - do error handling when unable to fetch data
+        printWithoutPrompt(error.message, "error");
     }
 }
 
 function processInput(input){
+    //AHHHHHHHHHHHH - implement command history here, push to stack or stg ig
     console.log(input);
     let functionlist = ["clear", "ls", "cd", "cat", "help", ""]
     switch(true){
@@ -133,14 +134,14 @@ function processInput(input){
             var isFoundInCurrDir = testFoundInCurrentDirectory(locationTo);
             if(!isFoundInCurrDir){
                 errorMessage = `cd: no such file or directory: ${locationTo}`;
-                printWithoutPrompt(errorMessage);
+                printWithoutPrompt(errorMessage, "error");
                 break;
             }
 
             var isFile = testIsFile(locationTo);
             if(isFile){
                 errorMessage = `cd: ${locationTo}: Not a directory`;
-                printWithoutPrompt(errorMessage);
+                printWithoutPrompt(errorMessage, "error");
                 break;
             }
 
@@ -168,6 +169,13 @@ function processInput(input){
                 }
             }
 
+            var isFoundInCurrDir = testFoundInCurrentDirectory(fileToRead);
+            if(!isFoundInCurrDir){
+                errorMessage = `cat: no such file or directory: ${fileToRead}`;
+                printWithoutPrompt(errorMessage, "error");
+                break;
+            }
+
             var isFile = testIsFile(fileToRead);
             if(isFile){
                 //print contents of file
@@ -175,15 +183,15 @@ function processInput(input){
             }else{
                 //show error message
                 errorMessage = `cat: ${fileToRead}: Is a directory`;
-                printWithoutPrompt(errorMessage);
+                printWithoutPrompt(errorMessage, "error");
             }
             break;
         case (!functionlist.includes(input)):
             errorMessage = input + ": command not found";
-            printWithoutPrompt(errorMessage);
+            printWithoutPrompt(errorMessage, "error");
 
             helpMessage = "Enter 'help' for a list of functions."
-            printWithoutPrompt(helpMessage);
+            printWithoutPrompt(helpMessage, "error");
             break;
     }
 }
@@ -212,13 +220,19 @@ function printFile(fileToRead){
 
         Object.entries(filteredObject).forEach(([key, value]) => {
             let formatting = `${key}: ${value}`;
-            printWithoutPrompt(formatting);
+            //handling links and making them clickable
+            if(value.includes("https")){
+                printLinkWithoutPrompt(key, value);
+            }else{
+                printWithoutPrompt(formatting, "normal");
+            }
         })
     }else{
         tempDirectory = tempDirectory[`${fileToRead}`];
         Object.entries(tempDirectory).forEach(([key, value]) => {
             let formatting = `${key}: ${value}`;
-            printWithoutPrompt(formatting);
+            //AHHHHHHHH - if value contains https, print link
+            printWithoutPrompt(formatting, "normal");
         })
     }
 }
@@ -298,15 +312,46 @@ function addToHistory(text){
     const userprompt = `anonymous@albertportfolio:${state.currentDirectory}$`;
     let lineBreak = document.createElement("br");
     const full = userprompt + " " + text;
-    history.append(full);
+    let content = document.createElement("span");
+    content.innerText = full;
+    history.append(content);
     history.append(lineBreak)
 }
 
-function printWithoutPrompt(text){
+function printLinkWithoutPrompt(key, value){
     const history = document.getElementById("code-container");
     let lineBreak = document.createElement("br");
-    history.append(text);
-    history.append(lineBreak)
+
+    let content = document.createElement("span");
+    content.innerHTML = `${key}: <a href="${value}" target="_blank" class="isLink">${value}</a>`;
+
+    history.append(content);
+    history.append(lineBreak);
+}
+
+function printWithoutPrompt(text, type){
+
+    const history = document.getElementById("code-container");
+    let content = "";
+    let lineBreak = document.createElement("br");
+
+    content = document.createElement("span");
+    content.innerText = text;
+
+    if(type == "folder"){
+        content.classList.add("isFolder");
+    }
+
+    if(type == "link"){
+        content.classList.add("isLink");
+    }
+
+    if(type == "error"){
+        content.classList.add("isError");
+    }
+
+    history.append(content);
+    history.append(lineBreak);
 }
 
 function printDirectory(currentDirectory){
@@ -314,8 +359,12 @@ function printDirectory(currentDirectory){
 
     if(currentDirectory == "∼"){ //if home directory
         Object.keys(dataStore).forEach((item) => {
-            printWithoutPrompt(item);
-            //need to handle personal information - e.g. 'file' - basically file vs folder display handling
+            //if folder, print in alt color
+            if(testIsFile(item)){
+                printWithoutPrompt(item, "normal");
+            }else{
+                printWithoutPrompt(item, "folder");
+            }
         })
     }else{
         //split first
@@ -336,11 +385,14 @@ function printDirectory(currentDirectory){
         const link = linking[directoryName];
         
         tempDirectory.forEach((item) => {
-            printWithoutPrompt(item[link]);
+            //if folder, print in alt color
+            if(testIsFile(item)){
+                printWithoutPrompt(item[link], "normal");
+            }else{
+                printWithoutPrompt(item[link], "folder");
+            }
         })
     }
-
-    //AHHHHHHHHHHHHHH - need to make function to detect if child is or contains array, apply style based on that
 }
 
 function printHelpMessage(){
@@ -354,7 +406,6 @@ function printHelpMessage(){
     Object.keys(functionlist).forEach((item) => {
         let charLength = item.length;
         let spacePaddingToAdd = 10 - charLength;
-        console.log(spacePaddingToAdd);
         var spacePadding = "";
         for(i=0; i < spacePaddingToAdd; i++){
             spacePadding += " ";
@@ -422,12 +473,12 @@ function flash(){
 //settings button, change font color, disable certain effects to make it easier to read
 
 //PROGRESS UPDATE
-//
-//currently working on implementing cd and ls
-//facing issue with the data being stored in array in the json
-//-need to handle ls based on certain key, for each array 
-//-need to handle cd based on certain key, for each array
-//
-//facing another issue with matching display dir name vs dataStore dir name
-//-either remove the thing that makes it easier to read, or make a handler to programmatically transform to standardized format
-//
+// in progress push to stack
+    //arrow controls position in stack
+    //no need to pop at all
+
+// tab to autocomplete
+    //use percentage matching
+	//if above threshold, replace text in textbox
+	//ensure using .toLower, don't care about capitalization when checking match threshold
+	//but ensure after match, use original text

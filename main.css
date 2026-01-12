@@ -1,3 +1,47 @@
+*{
+    color: white;
+    text-decoration: none;
+}
+
+button{
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    display: inline;
+    -moz-appearance: none; 
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+header{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.header-left > * {
+    padding: 10px;
+}
+
+.dropdown{
+    background-color: darkslategray;
+    display: flex;
+    flex-direction: column;
+}
+
+.hide{
+    display: none !important;
+}
+
+.current-page{
+    font-weight: bold;
+    text-decoration: underline;
+}
+
 .crt-container{
     border: 3px solid white;
     width: 80%;
@@ -20,7 +64,38 @@
     flex-direction: row;
 }
 
+#input-field{
+    /* reset individual properties */
+    border: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    outline: none; /* Removes the blue/yellow glow on focus in some browsers */
+
+    /* Inherit font styles from the parent element */
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+
+    /* Ensures it flows naturally within a line of text */
+    display: inline;
+    width: auto; /* Allows the width to adjust to the content (for single-line inputs) */
+    cursor: text; /* Keeps the text cursor visible */
+
+    padding-left: 7px;
+}
+
 body{
     background-color: black;
     font-family: monospace;
+}
+
+footer{
+    margin-top: 1rem;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    background-color: darkslategrey;
 }

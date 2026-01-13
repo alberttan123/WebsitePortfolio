@@ -10,7 +10,8 @@ let dataStore = {
 
 let state = {
     currentDirectory: "∼",
-    fontColor: "white"
+    fontColor: "white",
+    commandHistoryPosition: -1
 }
 
 let linking = {
@@ -20,6 +21,8 @@ let linking = {
     Certificates: "Certificate Name",
     Projects: "Project Title"
 }
+
+let commandHistory = []; //for arrow key history
 
 async function loadData(){
     try{
@@ -65,8 +68,7 @@ async function loadData(){
 }
 
 function processInput(input){
-    //AHHHHHHHHHHHH - implement command history here, push to stack or stg ig
-    console.log(input);
+    pushToCommandHistory(input);
     let functionlist = ["clear", "ls", "cd", "cat", "help", ""]
     switch(true){
         case (input === "help"):
@@ -78,10 +80,10 @@ function processInput(input){
         case (input === "clear"):
             clearCommandHistory();
             break;
-        case (/^cd\b/gm.test(input)): //checks if input starts with cd
-            var split = input.split(' ');
-            var splitLength = split.length;
-            var locationTo = split[1];
+        case (/^cd\b/gm.test(input)):{ //checks if input starts with cd
+            let split = input.split(' ');
+            let splitLength = split.length;
+            let locationTo = split[1];
 
             if(splitLength > 2){
                 let count = 0;
@@ -113,11 +115,11 @@ function processInput(input){
                 }
 
                 //remove last one
-                var parentDir = state.currentDirectory.split('/');
+                let parentDir = state.currentDirectory.split('/');
                 parentDir.pop();
                 
                 //rebuild
-                var newDir = "";
+                let newDir = "";
                 parentDir.forEach((item) => {
                     if(newDir == ""){
                         newDir = newDir.concat(item); //tilda handling
@@ -131,14 +133,14 @@ function processInput(input){
                 break;
             }
 
-            var isFoundInCurrDir = testFoundInCurrentDirectory(locationTo);
+            let isFoundInCurrDir = testFoundInCurrentDirectory(locationTo);
             if(!isFoundInCurrDir){
                 errorMessage = `cd: no such file or directory: ${locationTo}`;
                 printWithoutPrompt(errorMessage, "error");
                 break;
             }
 
-            var isFile = testIsFile(locationTo);
+            let isFile = testIsFile(locationTo);
             if(isFile){
                 errorMessage = `cd: ${locationTo}: Not a directory`;
                 printWithoutPrompt(errorMessage, "error");
@@ -147,11 +149,11 @@ function processInput(input){
 
             state.currentDirectory = state.currentDirectory.concat('/', locationTo);
             updateUserPrompt();
-            break;
-        case (/^cat\b/gm.test(input)): //checks if input starts with cat
-            var split = input.split(' ');
-            var splitLength = split.length;
-            var fileToRead = split[1];
+            break;}
+        case (/^cat\b/gm.test(input)):{ //checks if input starts with cat
+            let split = input.split(' ');
+            let splitLength = split.length;
+            let fileToRead = split[1];
 
             if(splitLength > 2){
                 let count = 0;
@@ -169,14 +171,14 @@ function processInput(input){
                 }
             }
 
-            var isFoundInCurrDir = testFoundInCurrentDirectory(fileToRead);
+            let isFoundInCurrDir = testFoundInCurrentDirectory(fileToRead);
             if(!isFoundInCurrDir){
                 errorMessage = `cat: no such file or directory: ${fileToRead}`;
                 printWithoutPrompt(errorMessage, "error");
                 break;
             }
 
-            var isFile = testIsFile(fileToRead);
+            let isFile = testIsFile(fileToRead);
             if(isFile){
                 //print contents of file
                 printFile(fileToRead);
@@ -185,7 +187,7 @@ function processInput(input){
                 errorMessage = `cat: ${fileToRead}: Is a directory`;
                 printWithoutPrompt(errorMessage, "error");
             }
-            break;
+            break;}
         case (!functionlist.includes(input)):
             errorMessage = input + ": command not found";
             printWithoutPrompt(errorMessage, "error");
@@ -198,13 +200,13 @@ function processInput(input){
 
 function printFile(fileToRead){
     //split first
-    var currentDirectorySplit = state.currentDirectory.split('/');
+    let currentDirectorySplit = state.currentDirectory.split('/');
     currentDirectorySplit.shift(); //removes the tilda
 
     //get tempDir
-    var depth = currentDirectorySplit.length;
-    var i = 0;
-    var tempDirectory = dataStore;
+    let depth = currentDirectorySplit.length;
+    let i = 0;
+    let tempDirectory = dataStore;
     while(i < depth){
         tempDirectory = tempDirectory[`${currentDirectorySplit[i]}`];
         i++;
@@ -231,14 +233,18 @@ function printFile(fileToRead){
         tempDirectory = tempDirectory[`${fileToRead}`];
         Object.entries(tempDirectory).forEach(([key, value]) => {
             let formatting = `${key}: ${value}`;
-            //AHHHHHHHH - if value contains https, print link
-            printWithoutPrompt(formatting, "normal");
+            //handling links and making them clickable
+            if(value.includes("https")){
+                printLinkWithoutPrompt(key, value);
+            }else{
+                printWithoutPrompt(formatting, "normal");
+            }
         })
     }
 }
 
 function testIsFile(searchString){
-    var isFile = false;
+    let isFile = false;
 
     if(state.currentDirectory == "∼"){
         if(!Array.isArray(dataStore[`${searchString}`])){
@@ -246,13 +252,13 @@ function testIsFile(searchString){
         }
     }else{
         //split first
-        var currentDirectorySplit = state.currentDirectory.split('/');
+        let currentDirectorySplit = state.currentDirectory.split('/');
         currentDirectorySplit.shift(); //removes the tilda
 
         //get tempDir
-        var depth = currentDirectorySplit.length;
-        var i = 0;
-        var tempDirectory = dataStore;
+        let depth = currentDirectorySplit.length;
+        let i = 0;
+        let tempDirectory = dataStore;
         while(i < depth){
             tempDirectory = tempDirectory[`${currentDirectorySplit[i]}`];
             i++;
@@ -273,19 +279,19 @@ function testIsFile(searchString){
 }
 
 function testFoundInCurrentDirectory(searchString){
-    var directoryItemsList = [];
+    let directoryItemsList = [];
 
     if(state.currentDirectory == "∼"){
         directoryItemsList = Object.keys(dataStore);
     }else{
         //split first
-        var currentDirectorySplit = state.currentDirectory.split('/');
+        let currentDirectorySplit = state.currentDirectory.split('/');
         currentDirectorySplit.shift(); //removes the tilda
 
         //get tempDir
-        var depth = currentDirectorySplit.length;
-        var i = 0;
-        var tempDirectory = dataStore;
+        let depth = currentDirectorySplit.length;
+        let i = 0;
+        let tempDirectory = dataStore;
         while(i < depth){
             tempDirectory = tempDirectory[`${currentDirectorySplit[i]}`];
             i++;
@@ -368,13 +374,13 @@ function printDirectory(currentDirectory){
         })
     }else{
         //split first
-        var currentDirectorySplit = currentDirectory.split('/');
+        let currentDirectorySplit = currentDirectory.split('/');
         currentDirectorySplit.shift(); //removes the tilda
 
         //get tempDir
-        var depth = currentDirectorySplit.length;
-        var i = 0;
-        var tempDirectory = dataStore;
+        let depth = currentDirectorySplit.length;
+        let i = 0;
+        let tempDirectory = dataStore;
         while(i < depth){
             tempDirectory = tempDirectory[`${currentDirectorySplit[i]}`];
             i++;
@@ -406,7 +412,7 @@ function printHelpMessage(){
     Object.keys(functionlist).forEach((item) => {
         let charLength = item.length;
         let spacePaddingToAdd = 10 - charLength;
-        var spacePadding = "";
+        let spacePadding = "";
         for(i=0; i < spacePaddingToAdd; i++){
             spacePadding += " ";
         }
@@ -423,19 +429,145 @@ function clearCommandHistory(){
 
 function updateUserPrompt(){
     const element = document.getElementById('userprompt');
-    var string = `anonymous@albertportfolio:${state.currentDirectory}$`;
+    let string = `anonymous@albertportfolio:${state.currentDirectory}$`;
     element.innerText = string;
+}
+
+function attemptMatch(command){
+    let threshold = 0.6 //if match is greater than 60%, replace with matched string
+    let commandSplit = command.split(' ');
+    let splitLength = commandSplit.length;
+    let locationTo = commandSplit[1];
+
+    if(splitLength > 2){
+        let count = 0;
+        while(count<splitLength){
+            if(count == 0){
+                locationTo = "";
+            }
+            if(count == 1){
+                locationTo = locationTo.concat(commandSplit[count]);
+            }
+            if(count > 1){
+                locationTo = locationTo.concat(" ", commandSplit[count]);
+            }
+            count++;
+        }
+    }
+
+    //getting available strings to match to
+    let currentDirectorySplit = state.currentDirectory.split('/');
+    currentDirectorySplit.shift(); //removes the tilda
+
+    let depth = currentDirectorySplit.length;
+    let i = 0;
+    let tempDirectory = dataStore;
+    while(i < depth){
+        tempDirectory = tempDirectory[`${currentDirectorySplit[i]}`];
+        i++;
+    }
+
+    let toBeMatchedAgainst = [];
+    if(Object.keys(linking).includes(currentDirectorySplit.at(-1))){
+        //linking contains what to display from the object
+        const directoryName = currentDirectorySplit.at(-1);
+        const link = linking[directoryName];
+        tempDirectory.forEach((item) => {
+            toBeMatchedAgainst.push(item[link]);
+        })
+    }else{
+        Object.keys(tempDirectory).forEach((item) => {
+            toBeMatchedAgainst.push(item);
+        })
+    }
+
+    if(!locationTo == null || !locationTo == ""){
+        //for limiting each string to the number of chars present
+        let locationToLength = locationTo.length;
+
+        //get percentage match of string to be matched and available strings
+        let currentHighest = {name: "", percentage: 0};
+
+        toBeMatchedAgainst.forEach((item) => {
+            let locationToLowered = locationTo.toLowerCase();
+            let locationToSplit = locationToLowered.split("");
+            let matchCharCount = 0;
+
+            let itemLowered = item.toLowerCase();
+            locationToSplit.forEach((char, index) => {
+                if(char == itemLowered[index]){
+                    matchCharCount += 1;
+                }
+            })
+
+            let percentage = matchCharCount / locationToLength;
+            if(percentage > currentHighest["percentage"]){
+                currentHighest["name"] = item;
+                currentHighest["percentage"] = percentage;
+            }
+        })
+
+        if(currentHighest["percentage"] > threshold){
+            //set to the matched one
+            let builtString = commandSplit[0] + " " + currentHighest["name"];
+            setCommandLine(builtString)
+        }
+    }
+}
+
+function pushToCommandHistory(command){
+    commandHistory.push(command);
+    console.log(commandHistory);
+}
+
+function viewPrevCommandHistory(){
+    let command = commandHistory.at(state.commandHistoryPosition);
+    setCommandLine(command);
+    if(state.commandHistoryPosition > (-commandHistory.length)){
+        state.commandHistoryPosition -= 1;
+    }
+}
+
+function viewNextCommandHistory(){
+    let command = commandHistory.at(state.commandHistoryPosition);
+    setCommandLine(command);
+    if(state.commandHistoryPosition < -1){
+        state.commandHistoryPosition += 1;
+    }
+}
+
+function setCommandLine(commandToBeSetTo){
+    let inputBox = document.getElementById("input-field");
+    inputBox.value = commandToBeSetTo;
+    inputBox.focus(); //set focus back onto input field
 }
 
 function initialize(){
     const inputField = document.getElementById("input-field");
     //adds event listeners to process when 'enter' keydown
     inputField.addEventListener('keydown', function(e) {
-        if(e.key === 'Enter' || e.keyCode === 13){
+        if(e.key === 'Enter'){
             const command = inputField.value.trim();
             addToHistory(command);
             processInput(command);
             inputField.value = "";
+            state.commandHistoryPosition = -1;
+        }
+ 
+        if(e.key === 'Tab'){
+            e.preventDefault(); //needed so that pressing tab doesnt change focus
+            const incompleteCommand = inputField.value.trim();
+            attemptMatch(incompleteCommand);
+        }
+
+        if(e.key === 'ArrowUp'){
+            viewPrevCommandHistory();
+            console.log(state.commandHistoryPosition);
+        }
+
+        if(e.key === 'ArrowDown'){
+            viewNextCommandHistory();
+            console.log(state.commandHistoryPosition);
         }
     })
     //focus to text input when page loads
@@ -472,13 +604,10 @@ function flash(){
 
 //settings button, change font color, disable certain effects to make it easier to read
 
-//PROGRESS UPDATE
-// in progress push to stack
-    //arrow controls position in stack
-    //no need to pop at all
+//change logged in account username
 
-// tab to autocomplete
-    //use percentage matching
-	//if above threshold, replace text in textbox
-	//ensure using .toLower, don't care about capitalization when checking match threshold
-	//but ensure after match, use original text
+//some sort of system for animating
+//able to handle:
+    //randomizing different startup sequences
+    //applying the css styles for anime.js
+    //
